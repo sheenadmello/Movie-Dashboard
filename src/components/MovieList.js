@@ -132,7 +132,11 @@ function MovieList({ searchQuery }) {
     if (isLoading) return <div>Loading...</div>;
     if (error) return <div>Error: {error.message}</div>;
 
-    if (!currentMovies.length) return <div>No movies found</div>;
+    // Check if there are no movies found for the given search query
+    if (!currentMovies.length && searchQuery) return <div>No movies found for "{searchQuery}"</div>;
+
+    // Default message when search query is empty and no movies are found
+    if (!currentMovies.length) return <div>No movies available</div>;
 
     return (
         <StyledMovieListContainer>
@@ -166,21 +170,17 @@ function MovieList({ searchQuery }) {
 
 export default MovieList;
 
-
-
 // import React, { useEffect, useState } from 'react';
+// import { Link } from 'react-router-dom';
 // import { useQuery } from '@tanstack/react-query';
-// import { Link } from 'react-router-dom'; // Import Link from react-router-dom
 // import { useSelector } from 'react-redux';
 // import Pagination from './Pagination';
+// import ErrorBoundary from './ErrorBoundary';
 // import { StyledMovieListContainer, StyledMovieItem, StyledMoviePoster, StyledMovieTitle, StyledMovieDetails } from './StyledComponents';
 
 // const fetchMovieDetails = async (omdbID) => {
 //     const url = `https://www.omdbapi.com/?i=${omdbID}&apikey=cf020b53`;
 //     const response = await fetch(url);
-//     if (!response.ok) {
-//         throw new Error('Failed to fetch movie details');
-//     }
 //     const data = await response.json();
 //     return data;
 // };
@@ -188,18 +188,14 @@ export default MovieList;
 // const fetchMovies = async (searchQuery, page) => {
 //     const url = searchQuery
 //         ? `https://www.omdbapi.com/?s=${searchQuery}&page=${page}&apikey=cf020b53`
-//         : `https://www.omdbapi.com/?s=fun&page=${page}&apikey=cf020b53`; // Default query if no search query provided
+//         : `https://www.omdbapi.com/?s=fun&page=${page}&apikey=cf020b53`;
+
 //     const response = await fetch(url);
-//     if (!response.ok) {
-//         throw new Error('Failed to fetch movies');
-//     }
 //     const data = await response.json();
 //     return data;
 // };
 
-
-
-// function MovieList({ searchQuery }) {
+// function MovieList({ searchQuery, showNoMoviesFoundAlert }) {
 //     const [movies, setMovies] = useState([]);
 //     const [allMovies, setAllMovies] = useState([]);
 //     const [totalMovies, setTotalMovies] = useState(0);
@@ -208,7 +204,7 @@ export default MovieList;
 
 //     const { sortOption, genreFilter, ratingFilter } = useSelector((state) => state.movie);
 
-//     const { data, error, isLoading } = useQuery({
+//     const { data, isLoading } = useQuery({
 //         queryKey: ['movies', searchQuery, currentPage],
 //         queryFn: () => fetchMovies(searchQuery, currentPage),
 //         keepPreviousData: true,
@@ -243,17 +239,12 @@ export default MovieList;
 //             const fetchDetailedMovies = async () => {
 //                 const detailedMovies = await Promise.all(
 //                     allMovies.map(async (movie) => {
-//                         try {
-//                             const detailedMovie = await fetchMovieDetails(movie.imdbID);
-//                             return { ...movie, ...detailedMovie };
-//                         } catch (err) {
-//                             console.error(`Error fetching details for ${movie.imdbID}:`, err);
-//                             return movie;
-//                         }
+//                         const detailedMovie = await fetchMovieDetails(movie.imdbID);
+//                         return { ...movie, ...detailedMovie };
 //                     })
 //                 );
 
-//                 let filteredMovies = [...detailedMovies];
+//                 let filteredMovies = detailedMovies;
 
 //                 if (genreFilter) {
 //                     filteredMovies = filteredMovies.filter((movie) => {
@@ -280,13 +271,16 @@ export default MovieList;
 //                 }
 
 //                 setMovies(filteredMovies);
+//                 if (filteredMovies.length === 0) {
+//                     showNoMoviesFoundAlert(searchQuery); // Call the alert function from ErrorBoundary here
+//                 }
 //             };
 
 //             fetchDetailedMovies();
 //         } else {
 //             setMovies([]);
 //         }
-//     }, [allMovies, genreFilter, ratingFilter, sortOption]);
+//     }, [allMovies, genreFilter, ratingFilter, sortOption, searchQuery, showNoMoviesFoundAlert]);
 
 //     const handlePageChange = (pageNumber) => {
 //         setCurrentPage(pageNumber);
@@ -297,31 +291,29 @@ export default MovieList;
 //     const currentMovies = movies.slice(indexOfFirstMovie, indexOfLastMovie);
 
 //     if (isLoading) return <div>Loading...</div>;
-//     if (error) return <div>Error: {error.message}</div>;
-
-//     if (!currentMovies.length) return <div>No movies found</div>;
 
 //     return (
-        
-//             <StyledMovieListContainer>
-//                 <h1>Movie List</h1>
-//                 <ul>
-//                     {currentMovies.map((movie) => (
-//                         <StyledMovieItem key={movie.imdbID}>
-//                             {movie.Poster && movie.Poster !== 'N/A' ? (
-//                                 <StyledMoviePoster src={movie.Poster} alt={movie.Title} />
-//                             ) : (
-//                                 <p>No poster available</p>
-//                             )}
-//                             <StyledMovieTitle>
-//                                 <Link to={`/movie/${movie.imdbID}`}>{movie.Title}</Link>
-//                             </StyledMovieTitle>
-//                             <StyledMovieDetails>Year: {movie.Year}</StyledMovieDetails>
-//                             <StyledMovieDetails>Genre: {movie.Genre}</StyledMovieDetails>
-//                             <StyledMovieDetails>Rating: {movie.imdbRating ? movie.imdbRating : 'N/A'}</StyledMovieDetails>
-//                         </StyledMovieItem>
-//                     ))}
-//                 </ul>
+//         <StyledMovieListContainer>
+//             <h1>Movie List</h1>
+//             {errorMessage && <div>{errorMessage}</div>}
+
+//             <ul>
+//                 {currentMovies.map((movie) => (
+//                     <StyledMovieItem key={movie.imdbID}>
+//                         {movie.Poster && movie.Poster !== 'N/A' ? (
+//                             <StyledMoviePoster src={movie.Poster} alt={movie.Title} />
+//                         ) : (
+//                             <p>No poster available</p>
+//                         )}
+//                         <StyledMovieTitle>
+//                             <Link to={`/movie/${movie.imdbID}`}>{movie.Title}</Link>
+//                         </StyledMovieTitle>
+//                         <StyledMovieDetails>Year: {movie.Year}</StyledMovieDetails>
+//                         <StyledMovieDetails>Genre: {movie.Genre}</StyledMovieDetails>
+//                         <StyledMovieDetails>Rating: {movie.imdbRating || 'N/A'}</StyledMovieDetails>
+//                     </StyledMovieItem>
+//                 ))}
+//             </ul>
 
 //             <Pagination
 //                 currentPage={currentPage}
@@ -333,14 +325,3 @@ export default MovieList;
 // }
 
 // export default MovieList;
-
-
-
-
-
-
-
-
-
-
-

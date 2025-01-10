@@ -12,7 +12,7 @@ function RRoutes() {
 
   return (
     <BrowserRouter> {/* Ensure everything is wrapped in BrowserRouter */}
-      <ErrorBoundary>
+       <ErrorBoundary>
         <StyledContainer>
           
             {/* These will be displayed only on the / route */}

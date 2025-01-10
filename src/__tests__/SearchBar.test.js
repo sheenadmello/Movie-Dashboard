@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import SearchBar from '../components/SearchBar'; // Adjust the import path accordingly
+import SearchBar from '../components/SearchBar'; 
 
 describe('SearchBar Component Tests', () => {
 
